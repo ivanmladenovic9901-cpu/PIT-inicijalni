@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Test Znanja</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+            color: #1c1e21;
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 20px 16px;
+            margin-bottom: 20px;
+        }
+
+        .hidden { display: none !important; }
+
+        h1 {
+            text-align: center;
+            color: #1a73e8;
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #5f6368;
+            font-size: 13px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #dadce0;
+            padding-bottom: 10px;
+        }
+
+        /* Forma za prijavu */
+        .login-box {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #3c4043;
+        }
+
+        .input-group input {
+            padding: 14px;
+            border: 1px solid #dadce0;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #1a73e8;
+        }
+
+        /* Traka sa statistikom */
+        .stats {
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            background: #ffffff;
+            border: 1px solid #e8eaed;
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timer-box {
+            font-size: 18px;
+            font-weight: 700;
+            color: #d93025;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .user-badge {
+            font-size: 13px;
+            font-weight: 600;
+            color: #3c4043;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+        .btn-primary { background: #1a73e8; color: #fff; }
+        .btn-primary:active { background: #1557b0; }
+        
+        .btn-success { background: #34a853; color: #fff; }
+        .btn-success:active { background: #2d8e47; }
+
+        /* Kartice pitanja */
+        .question-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #e8eaed;
+        }
+
+        .question-card h3 {
+            font-size: 15px;
+            color: #202124;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 14px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #dadce0;
+            background: #ffffff;
+            line-height: 1.3;
+        }
+
+        .option-label input {
+            margin-top: 2px;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        /* Banner za upozorenje */
+        .warning-banner {
+            background: #fce8e6;
+            color: #c5221f;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        /* Rezultati */
+        .score-card {
+            text-align: center;
+            padding: 20px 10px;
+            background: #e8f0fe;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .score-card .big-num {
+            font-size: 42px;
+            font-weight: 800;
+            color: #1a73e8;
+            margin: 8px 0;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top:0; left:0; right:0; bottom:0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📋 Test Znanja</h1>
+    <div class="subtitle">Baze Podataka &amp; C# Programiranje</div>
+
+    <!-- 1. EKRAN ZA PRIJAVU -->
+    <div id="login-container">
+        <div class="login-box">
+            <div class="input-group">
+                <label for="student-name">Ime i Prezime:</label>
+                <input type="text" id="student-name" placeholder="npr. Marko Marković" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="student-class">Odeljenje / Razred:</label>
+                <input type="text" id="student-class" placeholder="npr. III-2" autocomplete="off">
+            </div>
+            <div style="font-size: 12px; color: #70757a; margin-top: 4px;">
+                ⚠️ <b>Napomena:</b> Napuštanje aplikacije ili prelazak na drugi tab tokom rada se beleži kao prekršaj!
+            </div>
+            <button class="btn btn-primary" id="start-btn" style="margin-top: 10px;">Započni Test 🚀</button>
+        </div>
+    </div>
+
+    <!-- 2. KVIZ EKRAN -->
+    <div id="quiz-container" class="hidden">
+        <div class="stats">
+            <div class="user-badge" id="display-user-name"></div>
+            <div class="timer-box">⏱️ <span id="timer">09:00</span></div>
+        </div>
+
+        <div id="warning-box" class="warning-banner hidden">
+            ⚠️ Detektovano napuštanje testa! Prekršaj: <span id="violation-count">0</span>/3
+        </div>
+
+        <div id="questions-list"></div>
+
+        <button class="btn btn-success" id="submit-btn" style="margin-top: 20px;">✅ Predaj Test</button>
+    </div>
+
+    <!-- 3. REZULTATI EKRAN -->
+    <div id="results-container" class="hidden">
+        <div class="score-card">
+            <h2>Test je završen!</h2>
+            <div class="big-num" id="percentage">0%</div>
+            <p>Uspešno ste poslali odgovore.</p>
+            <p style="margin-top:8px; font-size: 14px; color: #5f6368;">
+                Tačno: <b id="correct-count">0</b> od <b id="total-count">15</b>
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Slanje podataka indikator -->
+<div id="loading" class="loading-overlay hidden">
+    <div>Slanje rezultat u bazu... ⏳</div>
+</div>
+
+<script>
+// ZALEPI SVOJ GOOGLE SCRIPT URL U PROMENLJIVU ISPOD
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0B4z3g1g3u_kTan4reyZMEJt0bHw8rzaPT0TzUcPVBSBYKONRC7LKsV7fx7FO29NkvQ/exec";
+
+const fullQuestionBank = [
+    { q: "Šta je baza podataka i čemu služi?", correct: "Organizovana kolekcija podataka za lako skladištenje, pretragu i izmenu.", wrong: ["Programski jezik namenjen za izradu i stilizovanje interfejsa na veb stranicama.", "Operativni sistem namenjen isključivo za upravljanje hardverskim resursima na serveru.", "Privremena tekstualna datoteka koja služi za čuvanje sistemskih podešavanja tokom rada programa."] },
+    { q: "Šta je SQL i za šta se koristi?", correct: "Jezik namenjen za rad i komunikaciju sa relacionim bazama podataka.", wrong: ["Mrežni protokol za siguran i šifrovan prenos datoteka između servera i klijenta.", "Skriptni jezik koji se pokreće u veb pregledaču za izradu animacija i vizuelnih efekata na stranici.", "Sistemski modul zadužen za indeksiranje i pretraživanje fajlova na hard disku."] },
+    { q: "Šta je SQL Server?", correct: "Sistem za upravljanje relacionim bazama podataka (RDBMS) kompanije Microsoft.", wrong: ["Mrežni ruter koji vrši filtriranje i preusmeravanje saobraćaja u lokalnoj mreži.", "Grafički softver koji se koristi za crtanje i vizuelno projektovanje baza podataka.", "Sistemski servis zadužen za izradu grafičkog korisničkog interfejsa."] },
+    { q: "Koja je razlika između baze podataka i tabele?", correct: "Baza je kontejner, a tabela je struktura unutar baze sa redovima i kolonama.", wrong: ["Baza čuva samo brojeve, dok tabela služi isključivo za čuvanje tekstualnih podataka.", "Baza se uvek nalazi na cloud serveru, dok se tabela fizički kreira na klijentskom računaru.", "Nema razlike, to su dva potpuno različita naziva za istu stvar."] },
+    { q: "Šta predstavlja SELECT naredba?", correct: "SQL naredba za dohvatanje i čitanje podataka iz tabele.", wrong: ["Naredba koja služi za trajno brisanje selektovanih zapisa iz baze podataka na osnovu određenog uslova.", "Komanda za izmenu strukture tabele i dodavanje novih primarnih ključeva u bazu.", "Sigurnosna komanda koja služi za dodelu administratorskih prava korisnicima baze."] },
+    { q: "Čemu služi WHERE klauzula?", correct: "Za filtriranje zapisa i prikazivanje samo onih koji ispunjavaju uslov.", wrong: ["Za definisanje mrežne lokacije i fizičkog servera na kome se izvršava upit radi povećanja brzine odziva.", "Za spajanje dve različite tabele na osnovu njihovih stranih ključeva u bazi.", "Za automatsko sortiranje rezultata upita po rastućem ili opadajućem redosledu."] },
+    { q: "Kako se pomoću SQL-a sortiraju rezultati? Čemu služi ORDER BY?", correct: "Za sortiranje zapisa u rastućem (ASC) ili opadajućem (DESC) redosledu.", wrong: ["Koristi se GROUP BY komanda koja vrši obrtanje kolona i automatsko grupisanje zapisa pri svakom prikazu.", "Za spajanje više redova u jedan jedinstveni zapis bez duplikata.", "Za filtriranje izabranih zapisa na osnovu relacijskih operatora."] },
+    { q: "Koja je razlika između WHERE i HAVING?", correct: "WHERE filtrira redove pre grupisanja, a HAVING filtrira grupisane rezultate.", wrong: ["WHERE se koristi samo sa tekstom, dok HAVING radi isključivo sa brojevima.", "HAVING je namenjen samo za SELECT upite, dok se WHERE koristi u INSERT i UPDATE naredbama.", "Nema nikakve razlike, obe komande vrše potpuno istu funkciju."] },
+    { q: "Čemu služi INSERT INTO naredba?", correct: "Za dodavanje novih redova u tabelu.", wrong: ["Za ažuriranje i izmenu postojećih podataka u kolonama tabele na osnovu odabrane vrednosti.", "Za trajno brisanje kompletne strukture tabele iz baze podataka.", "Za pravljenje nove prazne tabele sa definisanim tipovima podataka."] },
+    { q: "Kako se menjaju postojeći podaci u SQL-u? Čemu služi UPDATE?", correct: "Za menjanje i ažuriranje postojećih vrednosti u tabeli.", wrong: ["Koristi se ALTER TABLE komanda koja zamenjuje sve trenutne vrednosti novim podacima u bazi.", "Za promenu naziva baze podataka ili njene šeme na serveru.", "Za automatsko brisanje dupliranih vrednosti u odabranoj koloni."] },
+    { q: "Šta je C# i za šta se koristi?", correct: "Objektno-orijentisani jezik za razvoj desktop, web i mobilnih aplikacija.", wrong: ["Označivački jezik koji se koristi za definisanje strukture veb stranica.", "Ugrađeni sistem baza podataka koji se izvršava direktno u memoriji.", "Mrežni alat koji služi isključivo za konfigurisanje rutera i preklopnika."] },
+    { q: "Šta je promenljiva?", correct: "Imenovana memorijska lokacija za skladištenje podataka određenog tipa.", wrong: ["Fiksna vrednost u kodu koja se ne može menjati tokom rada programa.", "Datoteka na disku u koju se upisuju greške nastale tokom izvršavanja aplikacije.", "Klasa zadužena za direktnu komunikaciju sa bazom podataka."] },
+    { q: "Koji su osnovni tipovi podataka u C#?", correct: "Osnovni tipovi su int, double, decimal, bool, char i string.", wrong: ["Tipovi podataka koji se primenjuju u C# su integer_type, float64, boolean_val i array_list.", "Tipovi koji se koriste uključuju table_schema, record_row i column_field.", "Ugrađeni tipovi su var_decl, let_type i function_block."] },
+    { q: "Koja je razlika između if-else i switch naredbe?", correct: "if-else proverava složene uslove, a switch upoređuje jednu promenljivu sa više vrednosti.", wrong: ["switch se koristi samo unutar petlji, dok se if-else primenjuje van njih.", "if-else radi samo sa brojevima, dok switch prihvata isključivo tekstualne podatke.", "Nema nikakve razlike, switch je samo starija verzija if-else strukture."] },
+    { q: "Šta je klasa (class)?", correct: "Šablon (nacrt) na osnovu kojeg se kreiraju objekti.", wrong: ["Tip podatka koji se koristi isključivo za čuvanje jednodimenzionalnih nizova.", "Fajl na disku u kome se skladište SQL upiti unutar projekta.", "Poseban deo memorije rezervisan za izvršavanje petlji."] }
+];
+
+const fillerPhrases = [
+    " Ovo pravilo se primenjuje kako bi se obezbedila stabilnost i optimizacija celog sistema.",
+    " Ova opcija se često koristi u praksi za olakšano upravljanje podacima i logikom.",
+    " Pravilnom primenom ove funkcionalnosti postiže se efikasnije izvršavanje procesa."
+];
+
+let selectedQuestions = [];
+let userAnswers = {};
+let timerInterval = null;
+let timeRemaining = 540; // 9 minuta
+let studentName = "";
+let studentClass = "";
+let violationsCount = 0;
+let isSubmitted = false;
+
+document.getElementById('start-btn').addEventListener('click', startQuiz);
+document.getElementById('submit-btn').addEventListener('click', finishQuiz);
+
+// Sprečavanje varanja (Gubitak fokusa na mobilnom telefonu)
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden && !isSubmitted && studentName !== "") {
+        violationsCount++;
+        document.getElementById('warning-box').classList.remove('hidden');
+        document.getElementById('violation-count').textContent = violationsCount;
+        
+        if (violationsCount >= 3) {
+            alert("Test je automatski prekinut i predat zbog više uzastopnih prekršaja (napuštanje aplikacije)!");
+            finishQuiz();
+        }
+    }
+});
+
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function processOptionsLength(correctText, wrongTexts) {
+    const wrongCopy = [...wrongTexts];
+    const countToExpand = Math.floor(Math.random() * 2) + 1; 
+    const expandedIndices = new Set();
+    while(expandedIndices.size < countToExpand) {
+        expandedIndices.add(Math.floor(Math.random() * wrongCopy.length));
+    }
+    expandedIndices.forEach(idx => {
+        const randomFiller = fillerPhrases[Math.floor(Math.random() * fillerPhrases.length)];
+        wrongCopy[idx] += randomFiller;
+    });
+
+    return { correct: correctText, wrong: wrongCopy };
+}
+
+function startQuiz() {
+    studentName = document.getElementById('student-name').value.trim();
+    studentClass = document.getElementById('student-class').value.trim();
+
+    if (!studentName || !studentClass) {
+        alert("Molimo vas da unesete Ime, Prezime i Odeljenje!");
+        return;
+    }
+
+    document.getElementById('display-user-name').textContent = `${studentName} (${studentClass})`;
+    document.getElementById('login-container').classList.add('hidden');
+    document.getElementById('quiz-container').classList.remove('hidden');
+
+    const shuffledBank = shuffleArray(fullQuestionBank);
+    const chosenRawQuestions = shuffledBank.slice(0, 15);
+
+    selectedQuestions = chosenRawQuestions.map((qObj, index) => {
+        const processed = processOptionsLength(qObj.correct, qObj.wrong);
+        const allOptionsObj = [
+            { text: processed.correct, isCorrect: true },
+            { text: processed.wrong[0], isCorrect: false },
+            { text: processed.wrong[1], isCorrect: false },
+            { text: processed.wrong[2], isCorrect: false }
+        ];
+
+        const shuffledOptions = shuffleArray(allOptionsObj);
+        const letters = ['a', 'b', 'c', 'd'];
+        const optionsMap = {};
+        let correctLetter = '';
+
+        shuffledOptions.forEach((opt, i) => {
+            const letter = letters[i];
+            optionsMap[letter] = opt.text;
+            if (opt.isCorrect) correctLetter = letter;
+        });
+
+        return {
+            id: index,
+            questionText: qObj.q,
+            options: optionsMap,
+            correctLetter: correctLetter
+        };
+    });
+
+    renderQuestions();
+    startTimer();
+}
+
+function renderQuestions() {
+    const listContainer = document.getElementById('questions-list');
+    listContainer.innerHTML = '';
+
+    selectedQuestions.forEach((q, idx) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+
+        let optionsHTML = '';
+        ['a', 'b', 'c', 'd'].forEach(letter => {
+            optionsHTML += `
+                <label class="option-label">
+                    <input type="radio" name="q_${q.id}" value="${letter}" onchange="recordAnswer(${q.id}, '${letter}')">
+                    <span><b>${letter.toUpperCase()})</b> ${q.options[letter]}</span>
+                </label>
+            `;
+        });
+
+        card.innerHTML = `
+            <h3>${idx + 1}. ${q.questionText}</h3>
+            <div class="options-group">${optionsHTML}</div>
+        `;
+        listContainer.appendChild(card);
+    });
+}
+
+function recordAnswer(questionId, selectedLetter) {
+    userAnswers[questionId] = selectedLetter;
+}
+
+function startTimer() {
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateTimerDisplay();
+
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            alert("Vreme je isteklo! Test će se automatski predati.");
+            finishQuiz();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    document.getElementById('timer').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+async function finishQuiz() {
+    if(isSubmitted) return;
+    isSubmitted = true;
+    clearInterval(timerInterval);
+
+    let score = 0;
+    selectedQuestions.forEach((q) => {
+        if (userAnswers[q.id] === q.correctLetter) score++;
+    });
+
+    const total = selectedQuestions.length;
+    const percentageVal = ((score / total) * 100).toFixed(1);
+    const timeSpentSeconds = 540 - timeRemaining;
+    const minutesSpent = Math.floor(timeSpentSeconds / 60);
+    const secondsSpent = timeSpentSeconds % 60;
+    const formattedTimeSpent = `${minutesSpent}m ${secondsSpent}s`;
+
+    // Prikaz lokalno
+    document.getElementById('correct-count').textContent = score;
+    document.getElementById('total-count').textContent = total;
+    document.getElementById('percentage').textContent = `${percentageVal}%`;
+
+    document.getElementById('quiz-container').classList.add('hidden');
+    document.getElementById('results-container').classList.remove('hidden');
+
+    // Slanje u Google Sheets
+    if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbz0B4z3g1g3u_kTan4reyZMEJt0bHw8rzaPT0TzUcPVBSBYKONRC7LKsV7fx7FO29NkvQ/exec") {
+        document.getElementById('loading').classList.remove('hidden');
+        
+        const payload = {
+            studentName: studentName,
+            studentClass: studentClass,
+            score: score,
+            total: total,
+            percentage: percentageVal,
+            timeSpent: formattedTimeSpent,
+            violations: violationsCount
+        };
+
+        try {
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Obezbeđuje da CORS ne blokira slanje
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } catch (error) {
+            console.error("Greška pri slanju podataka:", error);
+        } finally {
+            document.getElementById('loading').classList.add('hidden');
+        }
+    }
+}
+</script>
+
+</body>
+</html>
