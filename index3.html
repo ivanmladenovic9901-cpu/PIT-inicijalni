@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test: Baze podataka & C#</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            padding: 30px 35px 40px;
+            margin: 20px 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 15px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #3498db;
+        }
+
+        .timer-box {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timer-box span {
+            background: #2c3e50;
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 24px;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        .btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #219150;
+        }
+
+        .question-card {
+            background: #fafbfc;
+            border-radius: 12px;
+            padding: 18px 22px 16px;
+            margin-bottom: 18px;
+            border: 1px solid #e9ecef;
+        }
+
+        .question-card h3 {
+            font-size: 16px;
+            color: #1a1a2e;
+            margin-bottom: 12px;
+        }
+
+        .options-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 14px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            line-height: 1.4;
+        }
+
+        .option-label input {
+            margin-top: 3px;
+        }
+
+        .option-label:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .score-box {
+            background: #2c3e50;
+            color: #fff;
+            border-radius: 12px;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .score-box .big {
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .review-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .review-card {
+            background: #fdfdfd;
+            border-radius: 10px;
+            padding: 16px 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .review-card.correct-card {
+            border-left: 6px solid #27ae60;
+            background-color: #f4fbf7;
+        }
+
+        .review-card.wrong-card {
+            border-left: 6px solid #e74c3c;
+            background-color: #fdf2f2;
+        }
+
+        .review-card p {
+            margin-bottom: 6px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .text-correct {
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        .text-wrong {
+            color: #c0392b;
+            font-weight: 600;
+        }
+
+        .footer-btns {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📋 Test Znanja</h1>
+    <div class="subtitle">Inicijalni PIT </div>
+
+    <!-- KVIZ KONTEJNER -->
+    <div id="quiz-container">
+        <div class="stats">
+            <div class="timer-box">
+                ⏱️ <span id="timer">09:00</span>
+            </div>
+            <div class="btn-group">
+            <!--   <button class="btn btn-primary" id="reset-timer-btn">🔄 Resetuj vreme</button>--> 
+                <button class="btn btn-success" id="submit-btn">✅ Završi test</button>
+            </div>
+        </div>
+
+        <div id="questions-list"></div>
+    </div>
+
+    <!-- REZULTATI KONTEJNER -->
+    <div id="results-container" class="hidden">
+        <div class="score-box">
+            <div>
+                <div style="font-size: 14px; opacity: 0.8;">📊 Tačnih odgovora</div>
+                <div class="big"><span id="correct-count">0</span> / <span id="total-count">15</span></div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size: 14px; opacity: 0.8;">🎯 Uspešnost</div>
+                <div class="big" id="percentage">0%</div>
+            </div>
+        </div>
+
+        <h3 style="color:#2c3e50; margin-bottom: 15px;">📝 Pregled rezultata:</h3>
+        <div id="errors-list" class="review-list"></div>
+
+        <div class="footer-btns">
+            <button class="btn btn-primary" id="restart-btn">🔄 Ponovi test</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const fullQuestionBank = [
+    // BAZE PODATAKA
+    {
+        q: "Šta je baza podataka i čemu služi?",
+        correct: "Organizovana kolekcija podataka za lako skladištenje, pretragu i izmenu.",
+        wrong: [
+            "Programski jezik namenjen za izradu i stilizovanje interfejsa na veb stranicama.",
+            "Operativni sistem namenjen isključivo za upravljanje hardverskim resursima na serveru.",
+            "Privremena tekstualna datoteka koja služi za čuvanje sistemskih podešavanja tokom rada programa."
+        ]
+    },
+    {
+        q: "Šta je SQL i za šta se koristi?",
+        correct: "Jezik namenjen za rad i komunikaciju sa relacionim bazama podataka.",
+        wrong: [
+            "Mrežni protokol za siguran i šifrovan prenos datoteka između servera i klijenta.",
+            "Skriptni jezik koji se pokreće u veb pregledaču za izradu animacija i vizuelnih efekata na stranici.",
+            "Sistemski modul zadužen za indeksiranje i pretraživanje fajlova na hard disku."
+        ]
+    },
+    {
+        q: "Šta je SQL Server?",
+        correct: "Sistem za upravljanje relacionim bazama podataka (RDBMS) kompanije Microsoft.",
+        wrong: [
+            "Mrežni ruter koji vrši filtriranje i preusmeravanje saobraćaja u lokalnoj mreži.",
+            "Grafički softver koji se koristi za crtanje i vizuelno projektovanje baza podataka.",
+            "Sistemski servis zadužen za izradu grafičkog korisničkog interfejsa."
+        ]
+    },
+    {
+        q: "Koja je razlika između baze podataka i tabele?",
+        correct: "Baza je kontejner, a tabela je struktura unutar baze sa redovima i kolonama.",
+        wrong: [
+            "Baza čuva samo brojeve, dok tabela služi isključivo za čuvanje tekstualnih podataka.",
+            "Baza se uvek nalazi na cloud serveru, dok se tabela fizički kreira na klijentskom računaru.",
+            "Nema razlike, to su dva potpuno različita naziva za istu stvar."
+        ]
+    },
+    {
+        q: "Šta predstavlja SELECT naredba?",
+        correct: "SQL naredba za dohvatanje i čitanje podataka iz tabele.",
+        wrong: [
+            "Naredba koja služi za trajno brisanje selektovanih zapisa iz baze podataka na osnovu određenog uslova.",
+            "Komanda za izmenu strukture tabele i dodavanje novih primarnih ključeva u bazu.",
+            "Sigurnosna komanda koja služi za dodelu administratorskih prava korisnicima baze."
+        ]
+    },
+    {
+        q: "Čemu služi WHERE klauzula?",
+        correct: "Za filtriranje zapisa i prikazivanje samo onih koji ispunjavaju uslov.",
+        wrong: [
+            "Za definisanje mrežne lokacije i fizičkog servera na kome se izvršava upit radi povećanja brzine odziva.",
+            "Za spajanje dve različite tabele na osnovu njihovih stranih ključeva u bazi.",
+            "Za automatsko sortiranje rezultata upita po rastućem ili opadajućem redosledu."
+        ]
+    },
+    {
+        q: "Kako se pomoću SQL-a sortiraju rezultati? Čemu služi ORDER BY?",
+        correct: "Za sortiranje zapisa u rastućem (ASC) ili opadajućem (DESC) redosledu.",
+        wrong: [
+            "Koristi se GROUP BY komanda koja vrši obrtanje kolona i automatsko grupisanje zapisa pri svakom prikazu.",
+            "Za spajanje više redova u jedan jedinstveni zapis bez duplikata.",
+            "Za filtriranje izabranih zapisa na osnovu relacijskih operatora."
+        ]
+    },
+    {
+        q: "Koja je razlika između WHERE i HAVING?",
+        correct: "WHERE filtrira redove pre grupisanja, a HAVING filtrira grupisane rezultate.",
+        wrong: [
+            "WHERE se koristi samo sa tekstom, dok HAVING radi isključivo sa brojevima.",
+            "HAVING je namenjen samo za SELECT upite, dok se WHERE koristi u INSERT i UPDATE naredbama.",
+            "Nema nikakve razlike, obe komande vrše potpuno istu funkciju."
+        ]
+    },
+    {
+        q: "Čemu služi INSERT INTO naredba?",
+        correct: "Za dodavanje novih redova u tabelu.",
+        wrong: [
+            "Za ažuriranje i izmenu postojećih podataka u kolonama tabele na osnovu odabrane vrednosti.",
+            "Za trajno brisanje kompletne strukture tabele iz baze podataka.",
+            "Za pravljenje nove prazne tabele sa definisanim tipovima podataka."
+        ]
+    },
+    {
+        q: "Kako se menjaju postojeći podaci u SQL-u? Čemu služi UPDATE?",
+        correct: "Za menjanje i ažuriranje postojećih vrednosti u tabeli.",
+        wrong: [
+            "Koristi se ALTER TABLE komanda koja zamenjuje sve trenutne vrednosti novim podacima u bazi.",
+            "Za promenu naziva baze podataka ili njene šeme na serveru.",
+            "Za automatsko brisanje dupliranih vrednosti u odabranoj koloni."
+        ]
+    },
+    {
+        q: "Čemu služi DELETE naredba?",
+        correct: "Za brisanje redova iz tabele koji ispunjavaju uslov.",
+        wrong: [
+            "Za trajno uklanjanje baze podataka sa servera zajedno sa svim konfiguracionim podešavanjima.",
+            "Za uklanjanje odabrane kolone iz strukture tabele bez uticaja na postojeće redove.",
+            "Za osvežavanje konekcije i ponovno pokretanje SQL servisa."
+        ]
+    },
+    {
+        q: "Šta je primarni ključ (PRIMARY KEY)?",
+        correct: "Jedinstveni identifikator svakog reda u tabeli koji ne može biti NULL.",
+        wrong: [
+            "Lozinka koja se koristi za povezivanje korisnika na bazu podataka.",
+            "Prva kolona u tabeli koja po pravilu uvek mora sadržati tekstualne zapise.",
+            "Mrežni ključ koji se primenjuje za spajanje dve odvojene baze podataka."
+        ]
+    },
+    {
+        q: "Šta je strani ključ (FOREIGN KEY)?",
+        correct: "Kolona koja povezuje tabelu sa primarnim ključem druge tabele.",
+        wrong: [
+            "Enkripcijski ključ koji se koristi za zaštitu i šifrovanje poverljivih podataka u bazi.",
+            "Identifikator koji kreira drugi administrator radi povezivanja sa spoljnim fajlovima.",
+            "Privremeni ključ koji važi samo dok je otvorena konekcija sa bazom."
+        ]
+    },
+    {
+        q: "Čemu služi JOIN?",
+        correct: "Za kombinovanje podataka iz dve ili više tabela na osnovu relacija.",
+        wrong: [
+            "Za pravljenje sigurnosne kopije (backup) cele baze podataka radi zaštite od gubitka informacija.",
+            "Za spajanje dva SQL fajla u jedan celovit dokument pre izvršavanja.",
+            "Za kreiranje indeksa koji ubrzavaju pretragu unutar jedne tabele."
+        ]
+    },
+    {
+        q: "Šta su agregatne funkcije (COUNT, SUM, AVG...)?",
+        correct: "Funkcije koje vrše izračunavanje nad skupom vrednosti i vraćaju jedan rezultat.",
+        wrong: [
+            "Metode za formatiranje tekstualnih nizova i spajanje rečenica iz više kolona.",
+            "Sistemske komande za podešavanje korisničkih prava i bezbednosti.",
+            "Funkcije koje generišu nasumične brojeve za potrebe testiranja baze."
+        ]
+    },
+
+    // C# PROGRAMIRANJE
+    {
+        q: "Šta je C# i za šta se koristi?",
+        correct: "Objektno-orijentisani jezik za razvoj desktop, web i mobilnih aplikacija.",
+        wrong: [
+            "Označivački jezik koji se koristi za definisanje strukture veb stranica.",
+            "Ugrađeni sistem baza podataka koji se izvršava direktno u memoriji.",
+            "Mrežni alat koji služi isključivo za konfigurisanje rutera i preklopnika."
+        ]
+    },
+    {
+        q: "Šta je promenljiva?",
+        correct: "Imenovana memorijska lokacija za skladištenje podataka određenog tipa.",
+        wrong: [
+            "Fiksna vrednost u kodu koja se ne može menjati tokom rada programa.",
+            "Datoteka na disku u koju se upisuju greške nastale tokom izvršavanja aplikacije.",
+            "Klasa zadužena za direktnu komunikaciju sa bazom podataka."
+        ]
+    },
+    {
+        q: "Koji su osnovni tipovi podataka u C#?",
+        correct: "Osnovni tipovi su int, double, decimal, bool, char i string.",
+        wrong: [
+            "Tipovi podataka koji se primenjuju u C# su integer_type, float64, boolean_val i array_list.",
+            "Tipovi koji se koriste uključuju table_schema, record_row i column_field.",
+            "Ugrađeni tipovi su var_decl, let_type i function_block."
+        ]
+    },
+    {
+        q: "Koja je razlika između int, double i string tipova?",
+        correct: "int čuva cele brojeve, double realne brojeve, a string tekst.",
+        wrong: [
+            "int služi za tekst, double za cele brojeve, a string za logičke vrednosti true i false.",
+            "int čuva samo pozitivne brojeve, dok double služi isključivo za negativne vrednosti.",
+            "Svi navedeni tipovi su potpuno identični u memoriji računara."
+        ]
+    },
+    {
+        q: "Čemu služi naredba if?",
+        correct: "Za uslovno grananje – izvršava kod samo ako je uslov tačan (true).",
+        wrong: [
+            "Za neprekidno ponavljanje bloka koda sve dok se aplikacija ne zatvori.",
+            "Za zauzimanje memorije i kreiranje novih klasa u programu.",
+            "Za hvatanje i obradu sistemskih grešaka u kodu."
+        ]
+    },
+    {
+        q: "Koja je razlika između if-else i switch naredbe?",
+        correct: "if-else proverava složene uslove, a switch upoređuje jednu promenljivu sa više vrednosti.",
+        wrong: [
+            "switch se koristi samo unutar petlji, dok se if-else primenjuje van njih.",
+            "if-else radi samo sa brojevima, dok switch prihvata isključivo tekstualne podatke.",
+            "Nema nikakve razlike, switch je samo starija verzija if-else strukture."
+        ]
+    },
+    {
+        q: "Čemu služe petlje (for, while)?",
+        correct: "Za ponavljanje bloka koda dok je ispunjen određeni uslov.",
+        wrong: [
+            "Za trenutno prekidanje programa kada dođe do neočekivane greške.",
+            "Za automatsko brisanje svih varijabli iz memorije nakon upotrebe.",
+            "Za kreiranje vizuelnih elemenata poput dugmadi na korisničkom interfejsu."
+        ]
+    },
+    {
+        q: "Šta je niz (array)?",
+        correct: "Struktura fiksne dužine koja čuva elemente istog tipa.",
+        wrong: [
+            "Lista koja može neograničeno rasti i primati različite tipove podataka u isto vreme.",
+            "Ugrađena matematička funkcija za generisanje nasumičnih brojeva.",
+            "Sistemska komanda za povezivanje aplikacije sa SQL serverom."
+        ]
+    },
+    {
+        q: "Šta je metoda u C#?",
+        correct: "Blok koda koji izvršava zadatak, može primati parametre i vraćati rezultat.",
+        wrong: [
+            "Lokalna varijabla koja se koristi za skladištenje celih brojeva unutar klase.",
+            "Specijalan tip podatka koji služi za brzo pretraživanje fajlova.",
+            "Komponenta za prikazivanje tabelarnih podataka na ekranu."
+        ]
+    },
+    {
+        q: "Koja je razlika između metode koja vraća vrednost i void metode?",
+        correct: "Metoda sa povratnim tipom vraća vrednost (return), dok void ne vraća ništa.",
+        wrong: [
+            "void metoda se uvek izvršava na serveru, dok ostale rade na klijentu.",
+            "Metoda koja vraća vrednost ne može primati ulazne parametre.",
+            "void metoda automatski briše sve prosleđene podatke iz memorije."
+        ]
+    },
+    {
+        q: "Šta je klasa (class)?",
+        correct: "Šablon (nacrt) na osnovu kojeg se kreiraju objekti.",
+        wrong: [
+            "Tip podatka koji se koristi isključivo za čuvanje jednodimenzionalnih nizova.",
+            "Fajl na disku u kome se skladište SQL upiti unutar projekta.",
+            "Poseban deo memorije rezervisan za izvršavanje petlji."
+        ]
+    },
+    {
+        q: "Šta je objekat?",
+        correct: "Konkretna instanca kreirana na osnovu klase.",
+        wrong: [
+            "Klasa je instanca kreirana na osnovu objekta definisanog u kodu.",
+            "Objekat je u C# jeziku drugi naziv za celobrojnu promenljivu.",
+            "Objekat i klasa su potpuno nezavisni i ne mogu se povezivati."
+        ]
+    },
+    {
+        q: "Šta je konstruktor?",
+        correct: "Posebna metoda koja se poziva pri kreiranju objekta radi inicijalizacije.",
+        wrong: [
+            "Metoda koja se poziva pri zatvaranju programa za brisanje fajlova.",
+            "Funkcija zadužena za pretvaranje teksta u celobrojni format.",
+            "Komanda koja zabranjuje izmenu polja u objektu."
+        ]
+    },
+    {
+        q: "Šta je nasleđivanje (inheritance)?",
+        correct: "Omogućava da nova klasa preuzme osobine i metode postojeće klase.",
+        wrong: [
+            "Proces ručnog kopiranja izvornog koda iz jednog projekta u drugi.",
+            "Automatsko preuzimanje i sinhronizacija svih tabela iz SQL baze.",
+            "Mogućnost aplikacije da izvršava kod na više procesorskih jezgara."
+        ]
+    },
+    {
+        q: "Šta je try-catch?",
+        correct: "Blok koda za hvatanje i obradu grešaka (izuzetaka) tokom rada programa.",
+        wrong: [
+            "Sistem za testiranje brzine izvršavanja i optimizaciju koda.",
+            "Sintaksna komanda koja proverava ispravnost SQL upita.",
+            "Mehanizam koji sprečava izmenu varijabli iz drugih niti."
+        ]
+    }
+];
+
+// Tekstovi za veštačko proširivanje netačnih odgovora
+const fillerPhrases = [
+    " Ovo pravilo se primenjuje kako bi se obezbedila stabilnost i optimizacija celog sistema.",
+    " Ova opcija se često koristi u praksi za olakšano upravljanje podacima i logikom.",
+    " Pravilnom primenom ove funkcionalnosti postiže se efikasnije izvršavanje procesa.",
+    " Ova postavka osigurava konzistentnost i spriječava neočekivane greške u radu."
+];
+
+let selectedQuestions = [];
+let userAnswers = {};
+let timerInterval = null;
+let timeRemaining = 540; // 9 minuta
+
+document.addEventListener('DOMContentLoaded', () => {
+    initQuiz();
+
+    document.getElementById('submit-btn').addEventListener('click', finishQuiz);
+    document.getElementById('reset-timer-btn').addEventListener('click', resetTimer);
+    document.getElementById('restart-btn').addEventListener('click', initQuiz);
+});
+
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+// Funkcija koja NASUMIČNO proširuje 1 ili 2 netačna odgovora tako da budu DUŽI od tačnog
+function processOptionsLength(correctText, wrongTexts) {
+    const wrongCopy = [...wrongTexts];
+    
+    // Određujemo koliko netačnih odgovora proširujemo (1 ili 2)
+    const countToExpand = Math.floor(Math.random() * 2) + 1; 
+    
+    // Nasumično biramo indekse netačnih odgovora za proširenje
+    const expandedIndices = new Set();
+    while(expandedIndices.size < countToExpand) {
+        expandedIndices.add(Math.floor(Math.random() * wrongCopy.length));
+    }
+
+    // Proširujemo izabrane netačne odgovore dodavanjem fraza
+    expandedIndices.forEach(idx => {
+        const randomFiller = fillerPhrases[Math.floor(Math.random() * fillerPhrases.length)];
+        wrongCopy[idx] = wrongCopy[idx] + randomFiller;
+    });
+
+    return {
+        correct: correctText,
+        wrong: wrongCopy
+    };
+}
+
+function initQuiz() {
+    clearInterval(timerInterval);
+    timeRemaining = 540;
+    userAnswers = {};
+
+    document.getElementById('quiz-container').classList.remove('hidden');
+    document.getElementById('results-container').classList.add('hidden');
+
+    const shuffledBank = shuffleArray(fullQuestionBank);
+    const chosenRawQuestions = shuffledBank.slice(0, 15);
+
+    selectedQuestions = chosenRawQuestions.map((qObj, index) => {
+        // Obrađujemo dužine opcija (netačni odgovori bivaju produženi)
+        const processed = processOptionsLength(qObj.correct, qObj.wrong);
+        
+        const allOptionsObj = [
+            { text: processed.correct, isCorrect: true },
+            { text: processed.wrong[0], isCorrect: false },
+            { text: processed.wrong[1], isCorrect: false },
+            { text: processed.wrong[2], isCorrect: false }
+        ];
+
+        const shuffledOptions = shuffleArray(allOptionsObj);
+        
+        const letters = ['a', 'b', 'c', 'd'];
+        const optionsMap = {};
+        let correctLetter = '';
+        let correctText = '';
+
+        shuffledOptions.forEach((opt, i) => {
+            const letter = letters[i];
+            optionsMap[letter] = opt.text;
+            if (opt.isCorrect) {
+                correctLetter = letter;
+                correctText = opt.text;
+            }
+        });
+
+        return {
+            id: index,
+            questionText: qObj.q,
+            options: optionsMap,
+            correctLetter: correctLetter,
+            correctText: correctText
+        };
+    });
+
+    renderQuestions();
+    startTimer();
+}
+
+function renderQuestions() {
+    const listContainer = document.getElementById('questions-list');
+    listContainer.innerHTML = '';
+
+    selectedQuestions.forEach((q, idx) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+
+        let optionsHTML = '';
+        ['a', 'b', 'c', 'd'].forEach(letter => {
+            optionsHTML += `
+                <label class="option-label">
+                    <input type="radio" name="q_${q.id}" value="${letter}" onchange="recordAnswer(${q.id}, '${letter}')">
+                    <span><strong>${letter.toUpperCase()})</strong> ${q.options[letter]}</span>
+                </label>
+            `;
+        });
+
+        card.innerHTML = `
+            <h3>${idx + 1}. ${q.questionText}</h3>
+            <div class="options-group">${optionsHTML}</div>
+        `;
+        listContainer.appendChild(card);
+    });
+}
+
+function recordAnswer(questionId, selectedLetter) {
+    userAnswers[questionId] = selectedLetter;
+}
+
+function startTimer() {
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateTimerDisplay();
+
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            alert("Vreme je isteklo! Test će se automatski završiti.");
+            finishQuiz();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    document.getElementById('timer').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function resetTimer() {
+    timeRemaining = 540;
+    updateTimerDisplay();
+}
+
+function finishQuiz() {
+    clearInterval(timerInterval);
+
+    let score = 0;
+    const reviewItems = [];
+
+    selectedQuestions.forEach((q, idx) => {
+        const userChoiceLetter = userAnswers[q.id];
+        const isCorrect = userChoiceLetter === q.correctLetter;
+
+        if (isCorrect) {
+            score++;
+        }
+
+        const userChoiceText = userChoiceLetter ? q.options[userChoiceLetter] : "Nije odgovoreno";
+
+        reviewItems.push({
+            qNum: idx + 1,
+            question: q.questionText,
+            userChoiceText: userChoiceText,
+            correctText: q.correctText,
+            isCorrect: isCorrect
+        });
+    });
+
+    const percentageVal = ((score / selectedQuestions.length) * 100).toFixed(1);
+
+    document.getElementById('correct-count').textContent = score;
+    document.getElementById('total-count').textContent = selectedQuestions.length;
+    document.getElementById('percentage').textContent = `${percentageVal}%`;
+
+    const reviewListDiv = document.getElementById('errors-list');
+    reviewListDiv.innerHTML = '';
+
+    reviewItems.forEach(item => {
+        const card = document.createElement('div');
+        
+        if (item.isCorrect) {
+            card.className = 'review-card correct-card';
+            card.innerHTML = `
+                <p><strong>${item.qNum}. Pitanje:</strong> ${item.question}</p>
+                <p>Vaš odgovor: <span class="text-correct">✔ ${item.userChoiceText}</span></p>
+            `;
+        } else {
+            card.className = 'review-card wrong-card';
+            card.innerHTML = `
+                <p><strong>${item.qNum}. Pitanje:</strong> ${item.question}</p>
+                <p>Vaš odgovor: <span class="text-wrong">✖ ${item.userChoiceText}</span></p>
+                <p>Tačan odgovor: <span class="text-correct">✔ ${item.correctText}</span></p>
+            `;
+        }
+        reviewListDiv.appendChild(card);
+    });
+
+    document.getElementById('quiz-container').classList.add('hidden');
+    document.getElementById('results-container').classList.add('hidden');
+    document.getElementById('results-container').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
