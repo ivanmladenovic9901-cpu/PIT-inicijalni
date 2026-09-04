@@ -477,7 +477,7 @@ async function finishQuiz() {
     document.getElementById('results-container').classList.remove('hidden');
 
     // Slanje u Google Sheets
-    if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbyX7I0YDORJHRoj3sniBO0Oc-bpwVSyPfhX1LKiO8uTasGY9MOiKROHXSbCiTIMYGsBGg/exec") {
+    if (GOOGLE_SCRIPT_URL) {
         document.getElementById('loading').classList.remove('hidden');
         
         const payload = {
