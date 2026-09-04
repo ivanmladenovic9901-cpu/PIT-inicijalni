@@ -49,7 +49,6 @@
             padding-bottom: 10px;
         }
 
-        /* Forma za prijavu */
         .login-box {
             display: flex;
             flex-direction: column;
@@ -81,7 +80,6 @@
             border-color: #1a73e8;
         }
 
-        /* Traka sa statistikom */
         .stats {
             position: sticky;
             top: 10px;
@@ -130,11 +128,10 @@
 
         .btn-primary { background: #1a73e8; color: #fff; }
         .btn-primary:active { background: #1557b0; }
-        
+
         .btn-success { background: #34a853; color: #fff; }
         .btn-success:active { background: #2d8e47; }
 
-        /* Kartice pitanja */
         .question-card {
             background: #f8f9fa;
             border-radius: 12px;
@@ -176,7 +173,6 @@
             flex-shrink: 0;
         }
 
-        /* Banner za upozorenje */
         .warning-banner {
             background: #fce8e6;
             color: #c5221f;
@@ -188,7 +184,6 @@
             font-weight: 600;
         }
 
-        /* Rezultati */
         .score-card {
             text-align: center;
             padding: 20px 10px;
@@ -202,6 +197,30 @@
             font-weight: 800;
             color: #1a73e8;
             margin: 8px 0;
+        }
+
+        .send-status {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .send-status.sending {
+            background: #fef7e0;
+            color: #b06000;
+        }
+
+        .send-status.ok {
+            background: #e6f4ea;
+            color: #137333;
+        }
+
+        .send-status.fail {
+            background: #fce8e6;
+            color: #c5221f;
         }
 
         .loading-overlay {
@@ -267,18 +286,15 @@
                 Tačno: <b id="correct-count">0</b> od <b id="total-count">15</b>
             </p>
         </div>
+        <div class="send-status sending" id="send-status">⏳ Slanje rezultata u bazu...</div>
     </div>
 </div>
 
-<!-- Slanje podataka indikator -->
-<div id="loading" class="loading-overlay hidden">
-    <div>Slanje rezultata u bazu... ⏳</div>
-</div>
-
-<!-- Skriveni iframe za slanje podataka u pozadini bez osvežavanja stranice -->
 <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
 
 <script>
+// ⚠️ NALEPI OVDE TAČAN URL SVOG DEPLOYMENT-A (mora se završavati na /exec)
+// Dobija se: Deploy > Manage deployments > kopiraj "Web app" URL
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwN65QDKfbA9qu9nQ2bXZc3TsNq9gjGSAJslgAroRrfTMGGRty8zrCMAbpuh6154T3Dag/exec";
 
 const fullQuestionBank = [
@@ -322,7 +338,7 @@ document.addEventListener("visibilitychange", () => {
         violationsCount++;
         document.getElementById('warning-box').classList.remove('hidden');
         document.getElementById('violation-count').textContent = violationsCount;
-        
+
         if (violationsCount >= 3) {
             alert("Test je automatski prekinut i predat zbog više uzastopnih prekršaja (napuštanje aplikacije)!");
             finishQuiz();
@@ -341,9 +357,9 @@ function shuffleArray(array) {
 
 function processOptionsLength(correctText, wrongTexts) {
     const wrongCopy = [...wrongTexts];
-    const countToExpand = Math.floor(Math.random() * 2) + 1; 
+    const countToExpand = Math.floor(Math.random() * 2) + 1;
     const expandedIndices = new Set();
-    while(expandedIndices.size < countToExpand) {
+    while (expandedIndices.size < countToExpand) {
         expandedIndices.add(Math.floor(Math.random() * wrongCopy.length));
     }
     expandedIndices.forEach(idx => {
@@ -449,7 +465,7 @@ function startTimer() {
 function updateTimerDisplay() {
     const minutes = Math.floor(timeRemaining / 60);
     const seconds = timeRemaining % 60;
-    document.getElementById('timer').textContent = 
+    document.getElementById('timer').textContent =
         `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
@@ -470,7 +486,6 @@ function finishQuiz() {
     const secondsSpent = timeSpentSeconds % 60;
     const formattedTimeSpent = `${minutesSpent}m ${secondsSpent}s`;
 
-    // Prikaz rezultata na ekranu
     document.getElementById('correct-count').textContent = score;
     document.getElementById('total-count').textContent = total;
     document.getElementById('percentage').textContent = `${percentageVal}%`;
@@ -478,45 +493,66 @@ function finishQuiz() {
     document.getElementById('quiz-container').classList.add('hidden');
     document.getElementById('results-container').classList.remove('hidden');
 
-    // Slanje u Google Sheets putem HTML forme (Pouzdano!)
-    if (GOOGLE_SCRIPT_URL) {
-        document.getElementById('loading').classList.remove('hidden');
+    const statusEl = document.getElementById('send-status');
 
-        // Kreiranje skrivene forme
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = GOOGLE_SCRIPT_URL;
-        form.target = 'hidden_iframe'; // Šalje u pozadini
-
-        const payload = {
-            studentName: studentName,
-            studentClass: studentClass,
-            score: score,
-            total: total,
-            percentage: percentageVal,
-            timeSpent: formattedTimeSpent,
-            violations: violationsCount
-        };
-
-        for (const key in payload) {
-            if (payload.hasOwnProperty(key)) {
-                const hiddenField = document.createElement('input');
-                hiddenField.type = 'hidden';
-                hiddenField.name = key;
-                hiddenField.value = payload[key];
-                form.appendChild(hiddenField);
-            }
-        }
-
-        document.body.appendChild(form);
-        form.submit(); // Slanje podataka
-        document.body.removeChild(form);
-
-        // Sakrij loading nakon 1.5s
-        setTimeout(() => {
-            document.getElementById('loading').classList.add('hidden');
-        }, 1500);
+    if (!GOOGLE_SCRIPT_URL) {
+        statusEl.textContent = "⚠️ URL za slanje podataka nije podešen.";
+        statusEl.className = "send-status fail";
+        return;
     }
+
+    statusEl.textContent = "⏳ Slanje rezultata u bazu...";
+    statusEl.className = "send-status sending";
+
+    const iframe = document.getElementById('hidden_iframe');
+
+    // Kad se skriveni iframe završi sa navigacijom, to znači da je zahtev
+    // stigao do Google-a i vratio odgovor (ne možemo pročitati sadržaj zbog
+    // cross-origin politike, ali sama navigacija je dovoljna kao znak da je
+    // POST poslat i primljen).
+    let confirmed = false;
+    iframe.onload = () => {
+        confirmed = true;
+        statusEl.textContent = "✅ Rezultati su poslati.";
+        statusEl.className = "send-status ok";
+    };
+
+    // Ako se ništa ne desi u razumnom roku, javi korisniku da nešto nije u redu
+    setTimeout(() => {
+        if (!confirmed) {
+            statusEl.textContent = "⚠️ Nismo sigurni da su rezultati stigli. Zabeleži rezultat ručno i javi nastavniku.";
+            statusEl.className = "send-status fail";
+        }
+    }, 8000);
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = GOOGLE_SCRIPT_URL;
+    form.target = 'hidden_iframe';
+
+    const payload = {
+        studentName: studentName,
+        studentClass: studentClass,
+        score: score,
+        total: total,
+        percentage: percentageVal,
+        timeSpent: formattedTimeSpent,
+        violations: violationsCount
+    };
+
+    for (const key in payload) {
+        if (payload.hasOwnProperty(key)) {
+            const hiddenField = document.createElement('input');
+            hiddenField.type = 'hidden';
+            hiddenField.name = key;
+            hiddenField.value = payload[key];
+            form.appendChild(hiddenField);
+        }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
 }
 </script>
 
