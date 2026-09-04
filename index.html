@@ -166,6 +166,7 @@
             border: 1px solid #dadce0;
             background: #ffffff;
             line-height: 1.3;
+            cursor: pointer;
         }
 
         .option-label input {
@@ -276,7 +277,7 @@
 
 <script>
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwizXj5KOFmG6XQp7aU0DHy58F89xbioe2w_1YEy0PAoTnwMr0wJZhSCnCyG4-4wpBwTg/exec";
-                         
+
 const fullQuestionBank = [
     { q: "Šta je baza podataka i čemu služi?", correct: "Organizovana kolekcija podataka za lako skladištenje, pretragu i izmenu.", wrong: ["Programski jezik namenjen za izradu i stilizovanje interfejsa na veb stranicama.", "Operativni sistem namenjen isključivo za upravljanje hardverskim resursima na serveru.", "Privremena tekstualna datoteka koja služi za čuvanje sistemskih podešavanja tokom rada programa."] },
     { q: "Šta je SQL i za šta se koristi?", correct: "Jezik namenjen za rad i komunikaciju sa relacionim bazama podataka.", wrong: ["Mrežni protokol za siguran i šifrovan prenos datoteka između servera i klijenta.", "Skriptni jezik koji se pokreće u veb pregledaču za izradu animacija i vizuelnih efekata na stranici.", "Sistemski modul zadužen za indeksiranje i pretraživanje fajlova na hard disku."] },
@@ -450,7 +451,7 @@ function updateTimerDisplay() {
         `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-async function finishQuiz() {
+function finishQuiz() {
     if (isSubmitted) return;
     isSubmitted = true;
     clearInterval(timerInterval);
@@ -479,7 +480,6 @@ async function finishQuiz() {
     if (GOOGLE_SCRIPT_URL) {
         document.getElementById('loading').classList.remove('hidden');
 
-        // Priprema podataka u URL formatu (izbegava CORS/JSON pretvaranje)
         const params = new URLSearchParams();
         params.append('studentName', studentName);
         params.append('studentClass', studentClass);
@@ -489,24 +489,22 @@ async function finishQuiz() {
         params.append('timeSpent', formattedTimeSpent);
         params.append('violations', violationsCount);
 
-        try {
-            await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: params.toString()
-            });
-            console.log("Podaci poslati u bazu.");
-        } catch (error) {
-            console.error("Greška pri slanju:", error);
-        } finally {
+        // Koristi fetch bez blokirajućeg await-a kako se ekran ne bi zaglavio
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: params.toString()
+        }).catch(err => console.error("Greška:", err));
+
+        // Sakrij loading indikator nakon kratke pauze
+        setTimeout(() => {
             document.getElementById('loading').classList.add('hidden');
-        }
+        }, 1200);
     }
 }
-
 </script>
 
 </body>
