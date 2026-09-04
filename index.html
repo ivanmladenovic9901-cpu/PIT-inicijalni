@@ -275,9 +275,12 @@
     <div>Slanje rezultata u bazu... ⏳</div>
 </div>
 
+<!-- Skriveni iframe za slanje podataka u pozadini bez osvežavanja stranice -->
+<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
 <script>
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdebqSVWFLRmGcAShsFlu2eVK9yFfE9bmr5mnwKbsG9IbGHMU8hU1s3p4TyU2Nl42dnw/exec";
-                         
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwizXj5KOFmG6XQp7aU0DHy58F89xbioe2w_1YEy0PAoTnwMr0wJZhSCnCyG4-4wpBwTg/exec";
+
 const fullQuestionBank = [
     { q: "Šta je baza podataka i čemu služi?", correct: "Organizovana kolekcija podataka za lako skladištenje, pretragu i izmenu.", wrong: ["Programski jezik namenjen za izradu i stilizovanje interfejsa na veb stranicama.", "Operativni sistem namenjen isključivo za upravljanje hardverskim resursima na serveru.", "Privremena tekstualna datoteka koja služi za čuvanje sistemskih podešavanja tokom rada programa."] },
     { q: "Šta je SQL i za šta se koristi?", correct: "Jezik namenjen za rad i komunikaciju sa relacionim bazama podataka.", wrong: ["Mrežni protokol za siguran i šifrovan prenos datoteka između servera i klijenta.", "Skriptni jezik koji se pokreće u veb pregledaču za izradu animacija i vizuelnih efekata na stranici.", "Sistemski modul zadužen za indeksiranje i pretraživanje fajlova na hard disku."] },
@@ -305,7 +308,7 @@ const fillerPhrases = [
 let selectedQuestions = [];
 let userAnswers = {};
 let timerInterval = null;
-let timeRemaining = 540; // 9 minuta
+let timeRemaining = 540;
 let studentName = "";
 let studentClass = "";
 let violationsCount = 0;
@@ -314,7 +317,6 @@ let isSubmitted = false;
 document.getElementById('start-btn').addEventListener('click', startQuiz);
 document.getElementById('submit-btn').addEventListener('click', finishQuiz);
 
-// Sprečavanje varanja
 document.addEventListener("visibilitychange", () => {
     if (document.hidden && !isSubmitted && studentName !== "") {
         violationsCount++;
@@ -476,33 +478,44 @@ function finishQuiz() {
     document.getElementById('quiz-container').classList.add('hidden');
     document.getElementById('results-container').classList.remove('hidden');
 
-    // Slanje u Google Sheets
+    // Slanje u Google Sheets putem HTML forme (Pouzdano!)
     if (GOOGLE_SCRIPT_URL) {
         document.getElementById('loading').classList.remove('hidden');
 
-        const params = new URLSearchParams();
-        params.append('studentName', studentName);
-        params.append('studentClass', studentClass);
-        params.append('score', score);
-        params.append('total', total);
-        params.append('percentage', percentageVal);
-        params.append('timeSpent', formattedTimeSpent);
-        params.append('violations', violationsCount);
+        // Kreiranje skrivene forme
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = GOOGLE_SCRIPT_URL;
+        form.target = 'hidden_iframe'; // Šalje u pozadini
 
-        // Koristi fetch bez blokirajućeg await-a kako se ekran ne bi zaglavio
-        fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: params.toString()
-        }).catch(err => console.error("Greška:", err));
+        const payload = {
+            studentName: studentName,
+            studentClass: studentClass,
+            score: score,
+            total: total,
+            percentage: percentageVal,
+            timeSpent: formattedTimeSpent,
+            violations: violationsCount
+        };
 
-        // Sakrij loading indikator nakon kratke pauze
+        for (const key in payload) {
+            if (payload.hasOwnProperty(key)) {
+                const hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.name = key;
+                hiddenField.value = payload[key];
+                form.appendChild(hiddenField);
+            }
+        }
+
+        document.body.appendChild(form);
+        form.submit(); // Slanje podataka
+        document.body.removeChild(form);
+
+        // Sakrij loading nakon 1.5s
         setTimeout(() => {
             document.getElementById('loading').classList.add('hidden');
-        }, 1200);
+        }, 1500);
     }
 }
 </script>
