@@ -481,7 +481,7 @@ async function finishQuiz() {
 if (GOOGLE_SCRIPT_URL) {
     document.getElementById('loading').classList.remove('hidden');
 
-    const payload = {
+   / const payload = {
         studentName: studentName,
         studentClass: studentClass,
         score: score,
@@ -489,7 +489,23 @@ if (GOOGLE_SCRIPT_URL) {
         percentage: percentageVal,
         timeSpent: formattedTimeSpent,
         violations: violationsCount
-    };
+    };*/
+    const payload = {
+    studentName: studentName,
+    studentClass: studentClass,
+    score: score,
+    total: total,
+    percentage: percentageVal,
+    timeSpent: formattedTimeSpent,
+    violations: violationsCount
+};
+
+fetch(GOOGLE_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors', // NIKAKO ne zaboravite 'no-cors'
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+});
 
     try {
         const sendData = new Blob(
