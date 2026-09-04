@@ -491,17 +491,22 @@ async function finishQuiz() {
         };
 
         try {
-            await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Obezbeđuje da CORS ne blokira slanje
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-        } catch (error) {
-            console.error("Greška pri slanju podataka:", error);
-        } finally {
-            document.getElementById('loading').classList.add('hidden');
-        }
+    await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify(payload)
+    });
+
+    console.log("Podaci su poslati Google Sheets-u.");
+
+} catch (error) {
+    console.error("Greška pri slanju podataka:", error);
+} finally {
+    document.getElementById('loading').classList.add('hidden');
+}
     }
 }
 </script>
