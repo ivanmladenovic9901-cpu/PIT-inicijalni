@@ -271,13 +271,12 @@
 
 <!-- Slanje podataka indikator -->
 <div id="loading" class="loading-overlay hidden">
-    <div>Slanje rezultat u bazu... ⏳</div>
+    <div>Slanje rezultata u bazu... ⏳</div>
 </div>
 
 <script>
-// ZALEPI SVOJ GOOGLE SCRIPT URL U PROMENLJIVU ISPOD
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWTN4TsyLs6MuOBc5uD7sPxpBp1LzvLiNzWnOJ8iSo478EN6e_d-0avY1Em5RlnxgWBA/exec";
-                          
+
 const fullQuestionBank = [
     { q: "Šta je baza podataka i čemu služi?", correct: "Organizovana kolekcija podataka za lako skladištenje, pretragu i izmenu.", wrong: ["Programski jezik namenjen za izradu i stilizovanje interfejsa na veb stranicama.", "Operativni sistem namenjen isključivo za upravljanje hardverskim resursima na serveru.", "Privremena tekstualna datoteka koja služi za čuvanje sistemskih podešavanja tokom rada programa."] },
     { q: "Šta je SQL i za šta se koristi?", correct: "Jezik namenjen za rad i komunikaciju sa relacionim bazama podataka.", wrong: ["Mrežni protokol za siguran i šifrovan prenos datoteka između servera i klijenta.", "Skriptni jezik koji se pokreće u veb pregledaču za izradu animacija i vizuelnih efekata na stranici.", "Sistemski modul zadužen za indeksiranje i pretraživanje fajlova na hard disku."] },
@@ -314,7 +313,7 @@ let isSubmitted = false;
 document.getElementById('start-btn').addEventListener('click', startQuiz);
 document.getElementById('submit-btn').addEventListener('click', finishQuiz);
 
-// Sprečavanje varanja (Gubitak fokusa na mobilnom telefonu)
+// Sprečavanje varanja
 document.addEventListener("visibilitychange", () => {
     if (document.hidden && !isSubmitted && studentName !== "") {
         violationsCount++;
@@ -452,7 +451,7 @@ function updateTimerDisplay() {
 }
 
 async function finishQuiz() {
-    if(isSubmitted) return;
+    if (isSubmitted) return;
     isSubmitted = true;
     clearInterval(timerInterval);
 
@@ -477,48 +476,36 @@ async function finishQuiz() {
     document.getElementById('results-container').classList.remove('hidden');
 
     // Slanje u Google Sheets
-    // Slanje u Google Sheets
-if (GOOGLE_SCRIPT_URL) {
-    document.getElementById('loading').classList.remove('hidden');
+    if (GOOGLE_SCRIPT_URL) {
+        document.getElementById('loading').classList.remove('hidden');
 
-      const payload = {
-    studentName: studentName,
-    studentClass: studentClass,
-    score: score,
-    total: total,
-    percentage: percentageVal,
-    timeSpent: formattedTimeSpent,
-    violations: violationsCount
-};
+        const payload = {
+            studentName: studentName,
+            studentClass: studentClass,
+            score: score,
+            total: total,
+            percentage: percentageVal,
+            timeSpent: formattedTimeSpent,
+            violations: violationsCount
+        };
 
-fetch(GOOGLE_SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors', // NIKAKO ne zaboravite 'no-cors'
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-});
-
-    try {
-        const sendData = new Blob(
-            [JSON.stringify(payload)],
-            { type: 'text/plain;charset=utf-8' }
-        );
-
-        const sent = navigator.sendBeacon(GOOGLE_SCRIPT_URL, sendData);
-
-        if (sent) {
-            console.log("Podaci poslati.");
-        } else {
-            console.log("Slanje nije pokrenuto.");
+        try {
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: JSON.stringify(payload)
+            });
+            console.log("Podaci su poslati u Google Sheets.");
+        } catch (error) {
+            console.error("Greška pri slanju:", error);
+        } finally {
+            document.getElementById('loading').classList.add('hidden');
         }
-
-    } catch (error) {
-        console.error("Greška:", error);
     }
-
-    document.getElementById('loading').classList.add('hidden');
 }
-
 </script>
 
 </body>
