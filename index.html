@@ -467,7 +467,7 @@ async function finishQuiz() {
     const secondsSpent = timeSpentSeconds % 60;
     const formattedTimeSpent = `${minutesSpent}m ${secondsSpent}s`;
 
-    // Prikaz lokalno
+    // Prikaz rezultata na ekranu
     document.getElementById('correct-count').textContent = score;
     document.getElementById('total-count').textContent = total;
     document.getElementById('percentage').textContent = `${percentageVal}%`;
@@ -479,26 +479,26 @@ async function finishQuiz() {
     if (GOOGLE_SCRIPT_URL) {
         document.getElementById('loading').classList.remove('hidden');
 
-        const payload = {
-            studentName: studentName,
-            studentClass: studentClass,
-            score: score,
-            total: total,
-            percentage: percentageVal,
-            timeSpent: formattedTimeSpent,
-            violations: violationsCount
-        };
+        // Priprema podataka u URL formatu (izbegava CORS/JSON pretvaranje)
+        const params = new URLSearchParams();
+        params.append('studentName', studentName);
+        params.append('studentClass', studentClass);
+        params.append('score', score);
+        params.append('total', total);
+        params.append('percentage', percentageVal);
+        params.append('timeSpent', formattedTimeSpent);
+        params.append('violations', violationsCount);
 
         try {
             await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: {
-                    'Content-Type': 'text/plain'
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: JSON.stringify(payload)
+                body: params.toString()
             });
-            console.log("Podaci su poslati u Google Sheets.");
+            console.log("Podaci poslati u bazu.");
         } catch (error) {
             console.error("Greška pri slanju:", error);
         } finally {
